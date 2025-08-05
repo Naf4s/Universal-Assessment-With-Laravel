@@ -7,7 +7,7 @@ import { useMemo } from 'react';
 // Definisikan item menu untuk setiap peran.
 // Pastikan nama rute (misal: 'users.index') sudah terdaftar di file rute Laravel Anda.
 const navItemsByRole: Record<string, NavItem[]> = {
-    operator: [
+    admin: [
         { title: 'Dashboard', href: route('dashboard'), icon: LayoutGrid },
         { title: 'Manajemen Pengguna', href: '/users', icon: Users }, // Ganti dengan route('users.index') jika ada
     ],

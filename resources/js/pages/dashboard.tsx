@@ -1,7 +1,7 @@
 import AppLayout from '@/layouts/app-layout';
+import AdminDashboard from '@/pages/AdminDashboard';
 import GuruDashboard from '@/pages/GuruDashboard';
 import KepsekDashboard from '@/pages/KepsekDashboard';
-import OperatorDashboard from '@/pages/OperatorDashboard';
 import SiswaDashboard from '@/pages/SiswaDashboard';
 import { type BreadcrumbItem, type SharedData } from '@/types';
 import { Head, usePage } from '@inertiajs/react';
@@ -18,8 +18,8 @@ export default function Dashboard() {
 
     const renderDashboardByRole = () => {
         switch (auth.user.role) {
-            case 'operator':
-                return <OperatorDashboard />;
+            case 'admin':
+                return <AdminDashboard />;
             case 'kepsek':
                 return <KepsekDashboard />;
             case 'guru':
