@@ -25,5 +25,9 @@ class CurriculumTemplate extends Model
     {
         return $this->hasMany(AssessmentAspect::class);
     }
-}
 
+    public function topLevelAssessmentAspects(): HasMany
+    {
+        return $this->hasMany(AssessmentAspect::class)->whereNull('parent_id');
+    }
+}
