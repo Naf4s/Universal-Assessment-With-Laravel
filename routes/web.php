@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 Route::get('/', function () {
-    return Inertia::render('welcome');
+    return Inertia::render('auth/login');
 })->name('home');
 
 Route::middleware(['auth', 'verified'])->group(function () {
@@ -15,14 +15,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     })->name('dashboard');
 });
 
-Route::middleware(['auth', 'role:operator,guru'])->group(function () {
+Route::middleware(['auth', 'role:admin,guru'])->group(function () {
     Route::get('/dashboard', function () {
-        return 'Dashboard khusus operator dan guru';
+        return 'Dashboard khusus admin dan guru';
     });
     
 });
 
-Route::middleware(['auth', 'role:operator'])->group(function () {
+Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::resource('curriculum-templates', CurriculumController::class)->except([
         'edit', 'show',
     ]);

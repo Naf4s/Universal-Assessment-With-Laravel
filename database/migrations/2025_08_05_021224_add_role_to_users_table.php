@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::table('users', function (Blueprint $table) {
             // Menambahkan kolom 'role' setelah kolom 'password'
             // dengan tipe data enum dan nilai default 'siswa'.
-            $table->enum('role', ['operator', 'kepsek', 'guru', 'siswa'])->after('password')->default('siswa');
+            $table->enum('role', ['admin', 'kepsek', 'guru', 'siswa'])->after('password')->default('siswa');
         });
     }
 
