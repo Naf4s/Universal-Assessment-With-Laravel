@@ -2,6 +2,9 @@
 
 use App\Http\Controllers\CurriculumController;
 use App\Http\Controllers\AssessmentAspectController;
+use App\Http\Controllers\GradeController;
+use App\Http\Controllers\ReportController;
+use App\Http\Controllers\TestReportController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -18,6 +21,24 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', function () {
         return Inertia::render('dashboard');
     })->name('dashboard');
+    
+    // Report routes - accessible to all authenticated users
+    Route::prefix('reports')->name('reports.')->group(function () {
+        Route::get('/student/{student?}', [ReportController::class, 'showStudentReport'])->name('student');
+        Route::get('/student/{student}/filtered', [ReportController::class, 'showFilteredReport'])->name('filtered');
+        Route::get('/export/{student?}', [ReportController::class, 'exportReport'])->name('export');
+        Route::get('/years/{student?}', [ReportController::class, 'getAvailableYears'])->name('years');
+        Route::get('/stats/{student?}', [ReportController::class, 'getReportStats'])->name('stats');
+    });
+    
+    // Test routes for development (only in local environment)
+    if (app()->environment('local')) {
+        Route::prefix('test')->name('test.')->group(function () {
+            Route::get('/report-structure', [TestReportController::class, 'testReportStructure'])->name('report-structure');
+            Route::get('/assessment-structure', [TestReportController::class, 'testAssessmentStructure'])->name('assessment-structure');
+            Route::get('/student-grades', [TestReportController::class, 'testStudentGrades'])->name('student-grades');
+        });
+    }
 });
 
 // Admin routes
@@ -39,6 +60,12 @@ Route::middleware(['auth', 'verified', 'role:admin'])->group(function () {
     Route::get('/users', function () {
         return Inertia::render('Admin/Users/Index');
     })->name('users.index');
+    
+    // Bulk report routes for admin
+    Route::prefix('reports')->name('reports.')->group(function () {
+        Route::get('/bulk', [ReportController::class, 'showBulkReports'])->name('bulk');
+        Route::get('/bulk/export', [ReportController::class, 'exportBulkReports'])->name('bulk.export');
+    });
 });
 
 // Guru routes (if needed for specific guru functionality)
@@ -47,6 +74,10 @@ Route::middleware(['auth', 'verified', 'role:guru'])->group(function () {
     Route::get('/my-classes', function () {
         return Inertia::render('Guru/MyClasses/Index');
     })->name('guru.my-classes');
+    
+    // Routes untuk input penilaian
+    Route::get('/input-penilaian', [App\Http\Controllers\GradeController::class, 'create'])->name('penilaian.create');
+    Route::post('/input-penilaian', [App\Http\Controllers\GradeController::class, 'store'])->name('penilaian.store');
 });
 
 // Kepsek routes (if needed for specific kepsek functionality)
@@ -55,7 +86,14 @@ Route::middleware(['auth', 'verified', 'role:kepsek'])->group(function () {
     Route::get('/reports', function () {
         return Inertia::render('Kepsek/Reports/Index');
     })->name('kepsek.reports');
+    
+    // Bulk report routes for kepsek
+    Route::prefix('reports')->name('reports.')->group(function () {
+        Route::get('/bulk', [ReportController::class, 'showBulkReports'])->name('bulk');
+        Route::get('/bulk/export', [ReportController::class, 'exportBulkReports'])->name('bulk.export');
+    });
 });
+
 
 // Siswa routes (if needed for specific siswa functionality)
 Route::middleware(['auth', 'verified', 'role:siswa'])->group(function () {

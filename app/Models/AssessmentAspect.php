@@ -47,5 +47,13 @@ class AssessmentAspect extends Model
     {
         return $this->hasMany(AssessmentAspect::class, 'parent_id');
     }
+
+    /**
+     * Mendapatkan semua nilai yang terkait dengan aspek penilaian ini.
+     */
+    public function grades(): HasMany
+    {
+        return $this->hasMany(Grade::class);
+    }
 }
 
