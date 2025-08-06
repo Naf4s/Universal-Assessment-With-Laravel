@@ -1,14 +1,15 @@
 import { SidebarGroup, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavItem, type SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { BarChart3, BookMarked, LayoutGrid, Printer, School, Users } from 'lucide-react';
+import { BarChart3, BookCheck, BookMarked, LayoutGrid, PencilRuler, Printer, School, Users } from 'lucide-react';
 import { useMemo } from 'react';
 
 // Definisikan item menu untuk setiap peran.
-// Pastikan nama rute (misal: 'users.index') sudah terdaftar di file rute Laravel Anda.
+// Pastikan semua nama rute di bawah ini sudah terdaftar di file rute Laravel Anda.
 const navItemsByRole: Record<string, NavItem[]> = {
     admin: [
         { title: 'Dashboard', href: route('dashboard'), icon: LayoutGrid },
+        { title: 'Manajemen Kurikulum', href: route('admin.curriculum.index'), icon: BookCheck },
         { title: 'Manajemen Pengguna', href: route('users.index'), icon: Users },
     ],
     kepsek: [
@@ -19,6 +20,7 @@ const navItemsByRole: Record<string, NavItem[]> = {
     guru: [
         { title: 'Dashboard', href: route('dashboard'), icon: LayoutGrid },
         { title: 'Kelas Saya', href: route('guru.my-classes'), icon: School },
+        { title: 'Input Penilaian', href: route('penilaian.create'), icon: PencilRuler },
         { title: 'Cetak Laporan', href: route('laporan.create'), icon: Printer },
     ],
     siswa: [
@@ -27,14 +29,14 @@ const navItemsByRole: Record<string, NavItem[]> = {
     ],
 };
 
-// Menu default sebagai fallback
+// Menu default sebagai fallback jika peran tidak cocok
 const defaultNavItems: NavItem[] = [{ title: 'Dashboard', href: route('dashboard'), icon: LayoutGrid }];
 
 export function NavMain() {
     const page = usePage<SharedData>();
     const { auth } = page.props;
 
-    // Tentukan item navigasi berdasarkan peran pengguna
+    // Tentukan item navigasi yang sesuai berdasarkan peran pengguna
     const navItems = useMemo(() => {
         const role = auth.user?.role as keyof typeof navItemsByRole;
         return navItemsByRole[role] || defaultNavItems;

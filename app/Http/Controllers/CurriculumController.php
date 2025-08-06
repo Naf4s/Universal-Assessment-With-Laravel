@@ -24,7 +24,7 @@ class CurriculumController extends Controller
             
         $aspects = AssessmentAspect::orderBy('name')->get();
 
-        return Inertia::render('Kurikulum/Index', [
+        return Inertia::render('Admin/Curriculum/Index', [
             'templates' => $templates,
             'aspects' => $aspects,
         ]);
@@ -58,17 +58,30 @@ class CurriculumController extends Controller
      */
     public function show(CurriculumTemplate $curriculumTemplate): Response
     {
+        // Load assessment aspects for this specific curriculum template
+        // Menambahkan with('children') jika Anda membutuhkan struktur hirarkis penuh di frontend Show page
+        $curriculumTemplate->load('assessmentAspects'); 
+
+        // Pastikan prop 'aspects' dikirimkan ke frontend
         return Inertia::render('Admin/Curriculum/Show', [
-            'curriculumTemplate' => $curriculumTemplate->load('assessmentAspects'),
+            'curriculumTemplate' => $curriculumTemplate,
+            'aspects' => $curriculumTemplate->assessmentAspects, // Mengirimkan aspek terkait template ini sebagai prop 'aspects'
         ]);
     }
 
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(CurriculumTemplate $curriculumTemplate)
+    public function edit(CurriculumTemplate $curriculumTemplate): Response
     {
         //
+        $curriculumTemplate->load('assessmentAspects'); 
+
+        // Pastikan prop 'aspects' dikirimkan ke frontend
+        return Inertia::render('Admin/Curriculum/Edit', [
+            'curriculumTemplate' => $curriculumTemplate,
+            'aspects' => $curriculumTemplate->assessmentAspects, // Mengirimkan aspek terkait template ini sebagai prop 'aspects'
+        ]);
     }
     /**
      * Update the specified resource in storage.
@@ -94,13 +107,14 @@ class CurriculumController extends Controller
             'name' => 'required|string|max:255|min:3',
             'parent_id' => 'nullable|integer|exists:assessment_aspects,id',
             'input_type' => 'required|string|in:angka,huruf,biner,teks',
+            'curriculum_template_id' => 'required|integer|exists:curriculum_templates,id', // Pastikan template ID dikirim
         ]);
 
         AssessmentAspect::create([
             'name' => $request->name,
             'parent_id' => $request->parent_id,
             'input_type' => $request->input_type,
-            'curriculum_template_id' => 1, // Default template ID, bisa diubah sesuai kebutuhan
+            'curriculum_template_id' => $request->curriculum_template_id, // Gunakan template ID dari request
         ]);
 
         return redirect()->back()->with('success', 'Aspek kurikulum berhasil ditambahkan');
