@@ -19,6 +19,52 @@ class ReportController extends Controller
     }
     
     /**
+     * Show the form for creating a new resource.
+     *
+     * @return \Inertia\Response
+     */
+    public function create()
+    {
+        $user = Auth::user();
+        $classes = [];
+
+        if ($user->role === 'guru') {
+            // Assuming a teacher has a 'classes' relationship
+            // Replace with your actual logic to get teacher's classes
+            $classes = $user->classes()->get(); 
+        } elseif ($user->role === 'kepsek') {
+            // For the principal, get all unique classes from the grades table or a dedicated classes table
+            // This is an example, adjust according to your database schema
+            $classes = \App\Models\Grade::select('class_id')->distinct()->with('class')->get()->pluck('class');
+        }
+
+        return Inertia::render('Laporan/Create', [
+            'classes' => $classes,
+        ]);
+    }
+
+    /**
+     * Display the specified resource.
+     *
+     * @param  int  $studentId
+     * @param  int  $year
+     * @return \Inertia\Response
+     */
+    public function show($studentId, $year)
+    {
+        $student = User::findOrFail($studentId);
+        $this->authorizeViewReport($student);
+
+        $reportData = $this->reportService->generateReportData($student, $year);
+
+        return Inertia::render('Reports/Show', [
+            'reportData' => $reportData,
+            'student' => $student,
+            'selectedYear' => $year,
+        ]);
+    }
+    
+    /**
      * Display student report page
      */
     public function showStudentReport(Request $request, User $student = null): Response
@@ -210,4 +256,4 @@ class ReportController extends Controller
         
         abort(403, 'You are not authorized to view this report.');
     }
-} 
+}

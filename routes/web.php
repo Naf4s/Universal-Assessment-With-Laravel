@@ -103,5 +103,11 @@ Route::middleware(['auth', 'verified', 'role:siswa'])->group(function () {
     })->name('siswa.my-grades');
 });
 
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/laporan/cetak', [App\Http\Controllers\ReportController::class, 'create'])
+        ->middleware('role:guru,kepsek')
+        ->name('laporan.create');
+});
+
 require __DIR__ . '/auth.php';
 require __DIR__ . '/settings.php';
