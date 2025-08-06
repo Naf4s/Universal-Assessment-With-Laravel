@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { router, usePage } from '@inertiajs/react';
-import AppLayout from '@/layouts/app-layout'; // Assuming you have a standard layout
+import AppLayout from '@/layouts/app-layout';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
 // Define types for better safety
-interface Class {
+interface ClassItem {
     id: number;
     name: string;
 }
@@ -18,8 +18,7 @@ interface Student {
 }
 
 interface PageProps {
-    classes: Class[];
-    // Add other props if they exist
+    classes: ClassItem[];
 }
 
 const CreateReport = () => {
@@ -32,22 +31,30 @@ const CreateReport = () => {
     const [isLoadingStudents, setIsLoadingStudents] = useState<boolean>(false);
 
     useEffect(() => {
-        if (selectedClass) {
-            setIsLoadingStudents(true);
-            // In a real app, you would fetch this from your backend
-            // Example: axios.get(`/api/classes/${selectedClass}/students`).then(response => { ... })
-            // For now, we'll use mock data.
-            const mockStudents: Student[] = [
-                { id: 1, name: 'Siswa A (Mock)' },
-                { id: 2, name: 'Siswa B (Mock)' },
-                { id: 3, name: 'Siswa C (Mock)' },
-            ];
-            setStudents(mockStudents);
-            setSelectedStudent(''); // Reset student selection
-            setIsLoadingStudents(false);
-        } else {
-            setStudents([]);
-        }
+        const fetchStudents = async () => {
+            if (selectedClass) {
+                setIsLoadingStudents(true);
+                setSelectedStudent(''); // Reset student selection when class changes
+                try {
+                    const response = await fetch(route('api.classes.students', { classId: selectedClass }));
+                    if (!response.ok) {
+                        throw new Error('Failed to fetch students');
+                    }
+                    const data: Student[] = await response.json();
+                    setStudents(data);
+                } catch (error) {
+                    console.error('Error fetching students:', error);
+                    setStudents([]);
+                } finally {
+                    setIsLoadingStudents(false);
+                }
+            } else {
+                setStudents([]);
+                setSelectedStudent('');
+            }
+        };
+
+        fetchStudents();
     }, [selectedClass]);
 
     const handleGenerateReport = () => {
@@ -66,11 +73,11 @@ const CreateReport = () => {
                 </h2>
             }
         >
-            <div className="py-12">
+            <main className="py-12">
                 <div className="max-w-4xl mx-auto sm:px-6 lg:px-8">
                     <div className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                         <div className="p-6 text-gray-900 dark:text-gray-100">
-                            <div className="space-y-6">
+                            <section className="space-y-6">
                                 <div>
                                     <Label htmlFor="academicYear">Tahun Ajaran</Label>
                                     <Input
@@ -126,11 +133,11 @@ const CreateReport = () => {
                                         Buat Rapor
                                     </Button>
                                 </div>
-                            </div>
+                            </section>
                         </div>
                     </div>
                 </div>
-            </div>
+            </main>
         </AppLayout>
     );
 };

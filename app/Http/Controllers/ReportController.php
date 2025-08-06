@@ -31,11 +31,12 @@ class ReportController extends Controller
         if ($user->role === 'guru') {
             // Assuming a teacher has a 'classes' relationship
             // Replace with your actual logic to get teacher's classes
-            $classes = $user->classes()->get(); 
+            // For example: $classes = $user->taughtClasses()->get();
+            // Untuk demonstrasi, kita akan mengambil semua kelas sementara
+            $classes = \App\Models\Grade::select('class_id')->distinct()->with('class')->get()->pluck('class')->filter()->unique();
         } elseif ($user->role === 'kepsek') {
             // For the principal, get all unique classes from the grades table or a dedicated classes table
-            // This is an example, adjust according to your database schema
-            $classes = \App\Models\Grade::select('class_id')->distinct()->with('class')->get()->pluck('class');
+            $classes = \App\Models\Grade::select('class_id')->distinct()->with('class')->get()->pluck('class')->filter()->unique();
         }
 
         return Inertia::render('Laporan/Create', [
@@ -208,6 +209,23 @@ class ReportController extends Controller
             'years' => $years,
             'current_year' => now()->year,
         ]);
+    }
+
+    /**
+     * Get students by class ID.
+     *
+     * @param  int  $classId
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getStudentsByClass(int $classId)
+    {
+        // Asumsi ada kolom 'class_id' di tabel users atau relasi ke tabel kelas
+        $students = User::where('class_id', $classId)
+                        ->where('role', 'siswa')
+                        ->select('id', 'name') // Pilih kolom yang dibutuhkan saja
+                        ->get();
+
+        return response()->json($students);
     }
     
     /**

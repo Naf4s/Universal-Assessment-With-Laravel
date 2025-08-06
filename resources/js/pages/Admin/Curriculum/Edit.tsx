@@ -1,35 +1,36 @@
 import React, { useState } from 'react';
-import { Head, router } from '@inertiajs/react'; // Menghapus useForm karena tidak lagi digunakan untuk detail template
+import { Head, useForm, router } from '@inertiajs/react';
+
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Plus, Edit, Trash2, Settings } from 'lucide-react';
-import AspekModal from './AspekModal';
+import InputError from '@/components/input-error';
+
 import { CurriculumTemplate, CurriculumAspect } from '@/types/curriculum';
+import AspekModal from './AspekModal';
 
-// Penting: Pastikan komponen Label diimpor jika digunakan di mode aspects atau AspekModal.
-// Di sini, kita akan menggunakan elemen p biasa dengan class untuk label di mode details.
-// Jika AspekModal membutuhkan Label, pastikan AspekModal mengimpornya sendiri atau Label diimpor di sini jika digunakan di luar AspekModal.
-import { Label } from '@/components/ui/label'; // Tetap impor Label karena mungkin digunakan di AspekModal atau di masa depan.
-
+import { Plus, Edit, Trash2, Settings } from 'lucide-react';
 
 interface Props {
     curriculumTemplate: CurriculumTemplate;
+    // aspects prop di sini akan berisi hanya aspek yang terkait dengan template ini
     aspects: CurriculumAspect[];
 }
 
-export default function ShowCurriculumTemplate({ curriculumTemplate, aspects }: Props) {
-    // Membaca viewMode dari URL parameter atau default ke 'details'
-    const urlParams = new URLSearchParams(window.location.search);
-    const initialViewMode = urlParams.get('viewMode') === 'aspects' ? 'aspects' : 'details';
-    const [viewMode, setViewMode] = useState<'details' | 'aspects'>(initialViewMode);
+export default function EditCurriculumTemplate({ curriculumTemplate, aspects }: Props) {
+    const [viewMode, setViewMode] = useState<'details' | 'aspects'>('details');
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingAspect, setEditingAspect] = useState<CurriculumAspect | null>(null);
 
-    // Menghapus useForm dan logika terkait karena mode details akan baca-saja
-    // const { data, setData, put, processing, errors } = useForm...
+    const { data, setData, put, processing, errors } = useForm({
+        name: curriculumTemplate.name,
+        description: curriculumTemplate.description || '',
+    });
 
     const breadcrumbs: BreadcrumbItem[] = [
         {
@@ -42,12 +43,14 @@ export default function ShowCurriculumTemplate({ curriculumTemplate, aspects }: 
         },
         {
             title: curriculumTemplate.name,
-            href: route('admin.curriculum.show', { curriculum_template: curriculumTemplate.id, viewMode: viewMode }),
+            href: route('admin.curriculum.show', { curriculum_template: curriculumTemplate.id }),
         },
     ];
 
-    // Fungsi handleTemplateUpdate tidak lagi dibutuhkan di sini karena mode details baca-saja
-    // const handleTemplateUpdate = ...
+    const handleTemplateUpdate = (e: React.FormEvent) => {
+        e.preventDefault();
+        put(route('curriculum-templates.update', { curriculum_template: curriculumTemplate.id }));
+    };
 
     const handleCreateAspect = () => {
         setEditingAspect(null);
@@ -68,6 +71,7 @@ export default function ShowCurriculumTemplate({ curriculumTemplate, aspects }: 
     };
 
     const handleModalSubmit = (formData: any) => {
+        // Tambahkan curriculum_template_id saat membuat atau mengedit aspek
         const dataWithTemplateId = {
             ...formData,
             curriculum_template_id: curriculumTemplate.id,
@@ -101,13 +105,13 @@ export default function ShowCurriculumTemplate({ curriculumTemplate, aspects }: 
                     <nav className="flex gap-2">
                         <Button
                             variant={viewMode === 'details' ? 'default' : 'outline'}
-                            onClick={() => router.get(route('admin.curriculum.show', { curriculum_template: curriculumTemplate.id, viewMode: 'details' }), { preserveState: true, preserveScroll: true })}
+                            onClick={() => setViewMode('details')}
                         >
                             Detail Template
                         </Button>
                         <Button
                             variant={viewMode === 'aspects' ? 'default' : 'outline'}
-                            onClick={() => router.get(route('admin.curriculum.show', { curriculum_template: curriculumTemplate.id, viewMode: 'aspects' }), { preserveState: true, preserveScroll: true })}
+                            onClick={() => setViewMode('aspects')}
                         >
                             Atur Aspek
                         </Button>
@@ -117,31 +121,42 @@ export default function ShowCurriculumTemplate({ curriculumTemplate, aspects }: 
                 {viewMode === 'details' ? (
                     <section aria-labelledby="template-details-heading">
                         <Card>
-                            <CardContent className="space-y-4">
-                                <div>
-                                    {/* Menggunakan Label untuk semantik, tapi menampilkan teks biasa */}
-                                    <Label className="block text-sm font-medium text-gray-700">Nama Template</Label>
-                                    <p className="mt-1 text-lg font-semibold text-gray-900">{curriculumTemplate.name}</p>
+                            <form onSubmit={handleTemplateUpdate}>
+                                <CardHeader>
+                                    <CardTitle>Informasi Template</CardTitle>
+                                    <CardDescription>Perbarui nama dan deskripsi template kurikulum.</CardDescription>
+                                </CardHeader>
+                                <CardContent className="space-y-6">
+                                    <div className="space-y-2">
+                                        <Label htmlFor="name">Nama Template</Label>
+                                        <Input
+                                            id="name"
+                                            name="name"
+                                            value={data.name}
+                                            onChange={(e) => setData('name', e.target.value)}
+                                            required
+                                            autoFocus
+                                        />
+                                        <InputError message={errors.name} />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="description">Deskripsi</Label>
+                                        <Textarea
+                                            id="description"
+                                            name="description"
+                                            value={data.description}
+                                            onChange={(e) => setData('description', e.target.value)}
+                                            rows={4}
+                                        />
+                                        <InputError message={errors.description} />
+                                    </div>
+                                </CardContent>
+                                <div className="flex items-center justify-end gap-4 p-6 pt-0">
+                                    <Button type="submit" disabled={processing}>
+                                        {processing ? 'Menyimpan...' : 'Simpan Perubahan'}
+                                    </Button>
                                 </div>
-                                <div>
-                                    <Label className="block text-sm font-medium text-gray-700">Deskripsi</Label>
-                                    <p className="mt-1 text-gray-800">{curriculumTemplate.description || 'Tidak ada deskripsi.'}</p>
-                                </div>
-                                <div>
-                                    <Label className="block text-sm font-medium text-gray-700">Status</Label>
-                                    <Badge variant={curriculumTemplate.is_active ? 'default' : 'secondary'}>
-                                        {curriculumTemplate.is_active ? 'Aktif' : 'Nonaktif'}
-                                    </Badge>
-                                </div>
-                                <div>
-                                    <Label className="block text-sm font-medium text-gray-700">Jumlah Aspek</Label>
-                                    <p className="mt-1 text-gray-800">{curriculumTemplate.assessment_aspects_count || 0}</p>
-                                </div>
-                                <div>
-                                    <Label className="block text-sm font-medium text-gray-700">Dibuat Pada</Label>
-                                    <p className="mt-1 text-gray-800">{new Date(curriculumTemplate.created_at).toLocaleDateString('id-ID')}</p>
-                                </div>
-                            </CardContent>
+                            </form>
                         </Card>
                     </section>
                 ) : (
@@ -224,6 +239,7 @@ export default function ShowCurriculumTemplate({ curriculumTemplate, aspects }: 
                 }}
                 onSubmit={handleModalSubmit}
                 aspect={editingAspect}
+                // Filter aspek yang dapat dipilih sebagai parent agar hanya dari template yang sama
                 aspects={aspects.filter(a => a.curriculum_template_id === curriculumTemplate.id)}
             />
         </AppLayout>

@@ -31,6 +31,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/stats/{student?}', [ReportController::class, 'getReportStats'])->name('stats');
     });
     
+    // API Route untuk mendapatkan siswa berdasarkan kelas
+    Route::get('/api/classes/{classId}/students', [ReportController::class, 'getStudentsByClass'])->name('api.classes.students');
+    
     // Test routes for development (only in local environment)
     if (app()->environment('local')) {
         Route::prefix('test')->name('test.')->group(function () {
@@ -43,15 +46,21 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 // Admin routes
 Route::middleware(['auth', 'verified', 'role:admin'])->group(function () {
-    Route::resource('curriculum-templates', CurriculumController::class)->except([
-        'edit', 'show',
-    ]);
+    // We'll remove the `except` for 'edit' and 'show' if we want to use the resource for these, 
+    // but since you have custom prefixed routes, let's just make sure the custom ones are complete.
+    // Route::resource('curriculum-templates', CurriculumController::class)->except([
+    //     'edit', 'show',
+    // ]);
+    // Removed the above resource definition to avoid confusion with custom routes below.
+
     Route::post('curriculum-templates/{curriculum_template}/assessment-aspects', [AssessmentAspectController::class, 'store'])->name('curriculum-templates.assessment-aspects.store');
     
-    // Routes untuk manajemen kurikulum
+    // Routes for curriculum management
     Route::get('/admin/curriculum', [CurriculumController::class, 'index'])->name('admin.curriculum.index');
     Route::get('/admin/curriculum/create', [CurriculumController::class, 'create'])->name('admin.curriculum.create');
     Route::get('/admin/curriculum/{curriculum_template}', [CurriculumController::class, 'show'])->name('admin.curriculum.show');
+    Route::get('/admin/curriculum/{curriculum_template}/edit', [CurriculumController::class, 'edit'])->name('admin.curriculum.edit'); // Added edit route
+    Route::put('/admin/curriculum/{curriculum_template}', [CurriculumController::class, 'update'])->name('admin.curriculum.update'); // Added update route
     Route::post('/admin/curriculum/aspects', [CurriculumController::class, 'storeAspect'])->name('admin.curriculum.aspects.store');
     Route::put('/admin/curriculum/aspects/{aspect}', [CurriculumController::class, 'updateAspect'])->name('admin.curriculum.aspects.update');
     Route::delete('/admin/curriculum/aspects/{aspect}', [CurriculumController::class, 'destroyAspect'])->name('admin.curriculum.aspects.destroy');
@@ -75,7 +84,7 @@ Route::middleware(['auth', 'verified', 'role:guru'])->group(function () {
         return Inertia::render('Guru/MyClasses/Index');
     })->name('guru.my-classes');
     
-    // Routes untuk input penilaian
+    // Routes for grade input
     Route::get('/input-penilaian', [App\Http\Controllers\GradeController::class, 'create'])->name('penilaian.create');
     Route::post('/input-penilaian', [App\Http\Controllers\GradeController::class, 'store'])->name('penilaian.store');
 });
