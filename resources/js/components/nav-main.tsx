@@ -9,19 +9,19 @@ import { useMemo } from 'react';
 const navItemsByRole: Record<string, NavItem[]> = {
     admin: [
         { title: 'Dashboard', href: route('dashboard'), icon: LayoutGrid },
-        { title: 'Manajemen Pengguna', href: '/users', icon: Users }, // Ganti dengan route('users.index') jika ada
+        { title: 'Manajemen Pengguna', href: route('users.index'), icon: Users },
     ],
     kepsek: [
         { title: 'Dashboard', href: route('dashboard'), icon: LayoutGrid },
-        { title: 'Laporan', href: '/reports', icon: BarChart3 }, // Ganti dengan route('reports.index') jika ada
+        { title: 'Laporan', href: route('kepsek.reports'), icon: BarChart3 },
     ],
     guru: [
         { title: 'Dashboard', href: route('dashboard'), icon: LayoutGrid },
-        { title: 'Kelas Saya', href: '/my-classes', icon: School }, // Ganti dengan route yang sesuai
+        { title: 'Kelas Saya', href: route('guru.my-classes'), icon: School },
     ],
     siswa: [
         { title: 'Dashboard', href: route('dashboard'), icon: LayoutGrid },
-        { title: 'Nilai Saya', href: '/my-grades', icon: BookMarked }, // Ganti dengan route yang sesuai
+        { title: 'Nilai Saya', href: route('siswa.my-grades'), icon: BookMarked },
     ],
 };
 

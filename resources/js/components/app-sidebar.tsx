@@ -9,13 +9,13 @@ import AppLogo from './app-logo';
 
 const footerNavItems: NavItem[] = [
     {
-        title: 'Repository',
-        href: 'https://github.com/laravel/react-starter-kit',
+        title: 'fitur1',
+        href: '',
         icon: Folder,
     },
     {
-        title: 'Documentation',
-        href: 'https://laravel.com/docs/starter-kits#react',
+        title: 'fitur2',
+        href: '',
         icon: BookOpen,
     },
 ];
