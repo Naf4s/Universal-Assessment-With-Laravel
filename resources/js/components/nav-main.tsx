@@ -1,7 +1,7 @@
 import { SidebarGroup, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavItem, type SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { BarChart3, BookMarked, LayoutGrid, School, Users } from 'lucide-react';
+import { BarChart3, BookMarked, LayoutGrid, Printer, School, Users } from 'lucide-react';
 import { useMemo } from 'react';
 
 // Definisikan item menu untuk setiap peran.
@@ -14,10 +14,12 @@ const navItemsByRole: Record<string, NavItem[]> = {
     kepsek: [
         { title: 'Dashboard', href: route('dashboard'), icon: LayoutGrid },
         { title: 'Laporan', href: route('kepsek.reports'), icon: BarChart3 },
+        { title: 'Cetak Laporan', href: route('laporan.create'), icon: Printer },
     ],
     guru: [
         { title: 'Dashboard', href: route('dashboard'), icon: LayoutGrid },
         { title: 'Kelas Saya', href: route('guru.my-classes'), icon: School },
+        { title: 'Cetak Laporan', href: route('laporan.create'), icon: Printer },
     ],
     siswa: [
         { title: 'Dashboard', href: route('dashboard'), icon: LayoutGrid },
