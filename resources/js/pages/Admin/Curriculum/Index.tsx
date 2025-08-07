@@ -122,7 +122,7 @@ export default function KurikulumIndex({ templates, aspects }: Props) {
                                                 Lihat
                                             </Button>
                                         </Link>
-                                        <Link href={route('admin.curriculum.show', { curriculum_template: template.id, viewMode: 'details' })} className="flex-1">
+                                        <Link href={route('admin.curriculum.edit', { curriculum_template: template.id, viewMode: 'details' })} className="flex-1">
                                             <Button size="sm" variant="outline" className="w-full">
                                                 <Edit className="w-4 h-4 mr-2" />
                                                 Edit

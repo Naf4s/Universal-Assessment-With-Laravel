@@ -50,7 +50,7 @@ class CurriculumController extends Controller
 
         CurriculumTemplate::create($request->all());
 
-        return redirect()->route('curriculum-templates.index');
+        return redirect()->route('admin.curriculum.index');
     }
 
     /**
@@ -88,7 +88,14 @@ class CurriculumController extends Controller
      */
     public function update(Request $request, CurriculumTemplate $curriculumTemplate)
     {
-        //
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+        ]);
+
+        $curriculumTemplate->update($request->all());
+
+        return redirect()->route('Admin/Curriculum/Index', $curriculumTemplate)->with('success', 'Template kurikulum berhasil diperbarui.');
     }
     /**
      * Remove the specified resource from storage.
