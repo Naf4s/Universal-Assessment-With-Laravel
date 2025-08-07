@@ -1,19 +1,12 @@
 import React, { useState } from 'react';
-import { Head, router } from '@inertiajs/react'; // Menghapus useForm karena tidak lagi digunakan untuk detail template
+import { Head, router } from '@inertiajs/react';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Plus, Edit, Trash2, Settings } from 'lucide-react';
-import AspekModal from './AspekModal';
 import { CurriculumTemplate, CurriculumAspect } from '@/types/curriculum';
-
-// Penting: Pastikan komponen Label diimpor jika digunakan di mode aspects atau AspekModal.
-// Di sini, kita akan menggunakan elemen p biasa dengan class untuk label di mode details.
-// Jika AspekModal membutuhkan Label, pastikan AspekModal mengimpornya sendiri atau Label diimpor di sini jika digunakan di luar AspekModal.
-import { Label } from '@/components/ui/label'; // Tetap impor Label karena mungkin digunakan di AspekModal atau di masa depan.
-
+import AspekModal from './AspekModal';
+import TemplateHeader from '@/components/TemplateHeader';
+import TemplateDetailView from '@/components/TemplateDetailView';
+import AspectManager from '@/components/AspectManager';
 
 interface Props {
     curriculumTemplate: CurriculumTemplate;
@@ -21,15 +14,11 @@ interface Props {
 }
 
 export default function ShowCurriculumTemplate({ curriculumTemplate, aspects }: Props) {
-    // Membaca viewMode dari URL parameter atau default ke 'details'
     const urlParams = new URLSearchParams(window.location.search);
     const initialViewMode = urlParams.get('viewMode') === 'aspects' ? 'aspects' : 'details';
     const [viewMode, setViewMode] = useState<'details' | 'aspects'>(initialViewMode);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingAspect, setEditingAspect] = useState<CurriculumAspect | null>(null);
-
-    // Menghapus useForm dan logika terkait karena mode details akan baca-saja
-    // const { data, setData, put, processing, errors } = useForm...
 
     const breadcrumbs: BreadcrumbItem[] = [
         {
@@ -45,9 +34,6 @@ export default function ShowCurriculumTemplate({ curriculumTemplate, aspects }: 
             href: route('admin.curriculum.show', { curriculum_template: curriculumTemplate.id, viewMode: viewMode }),
         },
     ];
-
-    // Fungsi handleTemplateUpdate tidak lagi dibutuhkan di sini karena mode details baca-saja
-    // const handleTemplateUpdate = ...
 
     const handleCreateAspect = () => {
         setEditingAspect(null);
@@ -85,134 +71,36 @@ export default function ShowCurriculumTemplate({ curriculumTemplate, aspects }: 
         setIsModalOpen(false);
         setEditingAspect(null);
     };
+    
+    const handleViewModeChange = (mode: 'details' | 'aspects') => {
+        setViewMode(mode);
+        router.get(route('admin.curriculum.show', { curriculum_template: curriculumTemplate.id, viewMode: mode }), {}, { preserveState: true });
+    };
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={curriculumTemplate.name} />
 
             <main className="container mx-auto py-6">
-                <header className="flex justify-between items-center mb-6">
-                    <div>
-                        <h1 className="text-3xl font-bold text-gray-900">{curriculumTemplate.name}</h1>
-                        <p className="text-gray-600 mt-2">
-                            Kelola detail dan aspek pembelajaran untuk template ini.
-                        </p>
-                    </div>
-                    <nav className="flex gap-2">
-                        <Button
-                            variant={viewMode === 'details' ? 'default' : 'outline'}
-                            onClick={() => router.get(route('admin.curriculum.show', { curriculum_template: curriculumTemplate.id, viewMode: 'details' }), { preserveState: true, preserveScroll: true })}
-                        >
-                            Detail Template
-                        </Button>
-                        <Button
-                            variant={viewMode === 'aspects' ? 'default' : 'outline'}
-                            onClick={() => router.get(route('admin.curriculum.show', { curriculum_template: curriculumTemplate.id, viewMode: 'aspects' }), { preserveState: true, preserveScroll: true })}
-                        >
-                            Atur Aspek
-                        </Button>
-                    </nav>
-                </header>
+                <TemplateHeader
+                    templateName={curriculumTemplate.name}
+                    description="Kelola detail dan aspek pembelajaran untuk template ini."
+                    viewMode={viewMode}
+                    onViewModeChange={handleViewModeChange}
+                />
 
                 {viewMode === 'details' ? (
-                    <section aria-labelledby="template-details-heading">
-                        <Card>
-                            <CardContent className="space-y-4">
-                                <div>
-                                    {/* Menggunakan Label untuk semantik, tapi menampilkan teks biasa */}
-                                    <Label className="block text-sm font-medium text-gray-700">Nama Template</Label>
-                                    <p className="mt-1 text-lg font-semibold text-gray-900">{curriculumTemplate.name}</p>
-                                </div>
-                                <div>
-                                    <Label className="block text-sm font-medium text-gray-700">Deskripsi</Label>
-                                    <p className="mt-1 text-gray-800">{curriculumTemplate.description || 'Tidak ada deskripsi.'}</p>
-                                </div>
-                                <div>
-                                    <Label className="block text-sm font-medium text-gray-700">Status</Label>
-                                    <Badge variant={curriculumTemplate.is_active ? 'default' : 'secondary'}>
-                                        {curriculumTemplate.is_active ? 'Aktif' : 'Nonaktif'}
-                                    </Badge>
-                                </div>
-                                <div>
-                                    <Label className="block text-sm font-medium text-gray-700">Jumlah Aspek</Label>
-                                    <p className="mt-1 text-gray-800">{curriculumTemplate.assessment_aspects_count || 0}</p>
-                                </div>
-                                <div>
-                                    <Label className="block text-sm font-medium text-gray-700">Dibuat Pada</Label>
-                                    <p className="mt-1 text-gray-800">{new Date(curriculumTemplate.created_at).toLocaleDateString('id-ID')}</p>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    </section>
+                    <TemplateDetailView
+                        name={curriculumTemplate.name}
+                        description={curriculumTemplate.description || 'Tidak ada deskripsi.'}
+                    />
                 ) : (
-                    <section aria-labelledby="aspect-structure-heading">
-                        <header className="flex justify-between items-center mb-6">
-                            <h2 id="aspect-structure-heading" className="text-xl font-semibold">Struktur Aspek Pembelajaran</h2>
-                            <Button onClick={handleCreateAspect}>
-                                <Plus className="w-4 h-4 mr-2" />
-                                Tambah Aspek
-                            </Button>
-                        </header>
-
-                        <ul className="grid gap-4">
-                            {aspects.length > 0 ? (
-                                aspects.map((aspect) => (
-                                    <li key={aspect.id}>
-                                        <Card>
-                                            <CardContent className="p-4">
-                                                <div className="flex items-center justify-between">
-                                                    <div className="flex items-center space-x-4">
-                                                        <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
-                                                        <div>
-                                                            <h3 className="font-medium">{aspect.name}</h3>
-                                                            <p className="text-sm text-gray-600">
-                                                                Tipe: {aspect.input_type} |
-                                                                Parent: {aspect.parent_id ? `ID ${aspect.parent_id}` : 'Root'}
-                                                            </p>
-                                                        </div>
-                                                    </div>
-                                                    <div className="flex gap-2">
-                                                        <Button
-                                                            size="sm"
-                                                            variant="outline"
-                                                            onClick={() => handleEditAspect(aspect)}
-                                                        >
-                                                            <Edit className="w-4 h-4" />
-                                                        </Button>
-                                                        <Button
-                                                            size="sm"
-                                                            variant="outline"
-                                                            onClick={() => handleDeleteAspect(aspect.id)}
-                                                        >
-                                                            <Trash2 className="w-4 h-4" />
-                                                        </Button>
-                                                    </div>
-                                                </div>
-                                            </CardContent>
-                                        </Card>
-                                    </li>
-                                ))
-                            ) : (
-                                <li>
-                                    <Card>
-                                        <CardContent className="p-8 text-center">
-                                            <div className="text-gray-500">
-                                                <Settings className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-                                                <h3 className="text-lg font-medium mb-2">Belum ada aspek pembelajaran</h3>
-                                                <p className="text-sm mb-4">
-                                                    Mulai dengan menambahkan aspek pertama untuk template ini.
-                                                </p>
-                                                <Button onClick={handleCreateAspect}>
-                                                    <Plus className="w-4 h-4 mr-2" />
-                                                    Tambah Aspek Pertama
-                                                </Button>
-                                            </div>
-                                        </CardContent>
-                                    </Card>
-                                </li>
-                            )}
-                        </ul>
-                    </section>
+                    <AspectManager
+                        aspects={aspects}
+                        handleCreateAspect={handleCreateAspect}
+                        handleEditAspect={handleEditAspect}
+                        handleDeleteAspect={handleDeleteAspect}
+                    />
                 )}
             </main>
 

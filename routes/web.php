@@ -59,8 +59,10 @@ Route::middleware(['auth', 'verified', 'role:admin'])->group(function () {
     Route::get('/admin/curriculum', [CurriculumController::class, 'index'])->name('admin.curriculum.index');
     Route::get('/admin/curriculum/create', [CurriculumController::class, 'create'])->name('admin.curriculum.create');
     Route::get('/admin/curriculum/{curriculum_template}', [CurriculumController::class, 'show'])->name('admin.curriculum.show');
-    Route::get('/admin/curriculum/{curriculum_template}/edit', [CurriculumController::class, 'edit'])->name('admin.curriculum.edit'); // Added edit route
-    Route::put('/admin/curriculum/{curriculum_template}', [CurriculumController::class, 'update'])->name('admin.curriculum.update'); // Added update route
+    Route::get('/admin/curriculum/{curriculum_template}/edit', [CurriculumController::class, 'edit'])->name('admin.curriculum.edit'); 
+    Route::put('/admin/curriculum/{curriculum_template}', [CurriculumController::class, 'update'])->name('admin.curriculum.update'); 
+    Route::post('/admin/curriculum', [CurriculumController::class, 'store'])->name('admin.curriculum.store');
+    Route::delete('/admin/curriculum/{curriculum_template}', [CurriculumController::class, 'destroy'])->name('admin.curriculum.destroy');
     Route::post('/admin/curriculum/aspects', [CurriculumController::class, 'storeAspect'])->name('admin.curriculum.aspects.store');
     Route::put('/admin/curriculum/aspects/{aspect}', [CurriculumController::class, 'updateAspect'])->name('admin.curriculum.aspects.update');
     Route::delete('/admin/curriculum/aspects/{aspect}', [CurriculumController::class, 'destroyAspect'])->name('admin.curriculum.aspects.destroy');
